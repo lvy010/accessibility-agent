@@ -1,0 +1,51 @@
+name: Extension CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run browser:install
+      - run: npm run test:browser
+      - name: VS Code minimum version smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:extension
+      - name: VS Code minimum version smoke test (Windows)
+        if: runner.os == 'Windows'
+        run: npm run test:extension
+      - name: VS Code current version smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:extension
+        env:
+          VSCODE_TEST_VERSION: stable
+      - name: VS Code current version smoke test (Windows)
+        if: runner.os == 'Windows'
+        run: npm run test:extension
+        env:
+          VSCODE_TEST_VERSION: stable
+      - run: npm run package
+      - name: Packaged extension gate (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:package
+      - name: Packaged extension gate (Windows)
+        if: runner.os == 'Windows'
+        run: npm run test:package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-agent-${{ matrix.os }}
+          path: '*.vsix'
