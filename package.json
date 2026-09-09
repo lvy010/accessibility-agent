@@ -1,0 +1,159 @@
+{
+  "name": "accessibility-agent",
+  "displayName": "Accessibility Agent · 无障碍工程师",
+  "description": "借助现有 Copilot 或兼容模型完成 Web 无障碍检查、修复预览、验证和中文交付报告。",
+  "version": "0.1.0",
+  "publisher": "lvy010",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lvy010/accessibility-agent.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0",
+    "node": ">=20.17.0"
+  },
+  "categories": [
+    "Other",
+    "Linters",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "Copilot",
+    "WCAG",
+    "axe"
+  ],
+  "main": "./dist/extension.js",
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "本插件需要读取源代码、调用模型并应用经确认的修改。"
+    },
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "修复与浏览器检测需要本地或远程主机上的文件系统。"
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "accessibilityAgent.run",
+        "title": "无障碍：一键检查与修复",
+        "icon": "$(accessibility)"
+      },
+      {
+        "command": "accessibilityAgent.selectModel",
+        "title": "无障碍：选择 AI 模型"
+      },
+      {
+        "command": "accessibilityAgent.openReport",
+        "title": "无障碍：打开交付报告"
+      },
+      {
+        "command": "accessibilityAgent.undo",
+        "title": "无障碍：撤销最近一次修复"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "accessibilityAgent",
+          "title": "无障碍工程师",
+          "icon": "media/accessibility.svg"
+        }
+      ]
+    },
+    "views": {
+      "accessibilityAgent": [
+        {
+          "type": "webview",
+          "id": "accessibilityAgent.dashboard",
+          "name": "检查与修复"
+        }
+      ]
+    },
+    "menus": {
+      "editor/title": [
+        {
+          "command": "accessibilityAgent.run",
+          "when": "resourceScheme == file",
+          "group": "navigation@100"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Accessibility Agent",
+      "properties": {
+        "accessibilityAgent.modelId": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "首选 VS Code Language Model ID；为空时交互选择。不读取其他插件的密钥。"
+        },
+        "accessibilityAgent.maxFiles": {
+          "type": "integer",
+          "default": 8,
+          "minimum": 1,
+          "maximum": 20,
+          "description": "单次可发送给模型的最大文件数。"
+        },
+        "accessibilityAgent.browserPath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine",
+          "description": "可选：检测主机上 Chromium、Chrome 或 Edge 可执行文件的绝对路径。"
+        },
+        "accessibilityAgent.allowedResourceOrigins": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          },
+          "default": [],
+          "description": "显式允许浏览器检测加载的跨源资源来源，例如 https://cdn.example.com；默认仅允许目标来源。"
+        },
+        "accessibilityAgent.validationTimeoutSeconds": {
+          "type": "integer",
+          "default": 120,
+          "minimum": 10,
+          "maximum": 900,
+          "description": "用户确认的验证任务的最长执行时间；超时中止，不标记通过。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run check && npm run build",
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "check": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "test:browser": "tsx --test test/browser/*.test.ts",
+    "test:extension": "node test/extension/run.cjs",
+    "test:package": "node test/extension/run.cjs --vsix",
+    "browser:install": "playwright-core install chromium",
+    "package": "vsce package",
+    "release:verify": "npm run verify && npm run test:browser && npm audit --omit=dev --audit-level=high && npm run package && npm run test:package",
+    "verify": "npm run check && npm test && npm run build"
+  },
+  "dependencies": {
+    "axe-core": "4.13.0",
+    "playwright-core": "1.63.0",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "1.95.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "3.9.2",
+    "esbuild": "^0.25.12",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.3",
+    "yauzl": "^3.4.0"
+  }
+}

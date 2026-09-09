@@ -1,0 +1,10 @@
+**
+!package.json
+!README.md
+!LICENSE
+!CHANGELOG.md
+!SECURITY.md
+!docs/**
+!dist/**
+!media/**
+!node_modules/playwright-core/**
